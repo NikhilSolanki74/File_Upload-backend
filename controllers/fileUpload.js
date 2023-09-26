@@ -1,5 +1,5 @@
 const File = require("../models/File");
-
+const cloudinary = require("cloudinary").v2
 exports.localFileUpload = async (req, res) =>{
     try {
         const file = req.files.file;
@@ -19,4 +19,57 @@ exports.localFileUpload = async (req, res) =>{
     }catch(error){
     console.log(error);
     }
+}
+
+function isFTS(type , supportedTypes){
+    
+    return supportedTypes.includes(type) 
+}
+  
+async function uploadFileToCloudinary(file , folder){
+    const options = {folder};
+    
+    return await cloudinary.uploader.upload(file.tempFilePath , options )
+}
+
+exports.imageUpload= async (req , res)=>{
+    try{
+     const {name , tags , email } = req.body
+     console.log(name , tags , email);
+     const file = req.files.imageFile;
+     console.log(file);
+
+     const supportedTypes = ["jpg" , "jpeg" , "png"]
+     const filetype = file.name.split('.')[1].toLowerCase();
+     
+     if(!isFTS(filetype , supportedTypes)){
+        return res.status(400).json({
+            success:false,
+            message:"file format is not supported bro"
+        })
+     }
+     const response = await uploadFileToCloudinary(file , "ABCD");
+     
+     console.log(response)
+
+       const fileData = await File.create({
+        name ,
+        tags,
+        email,
+        imageUrl:response.secure_url
+       })
+    res.json({
+        success:true,
+        imageUrl:response.secure_url,
+        message:'image Successfully Uploaded '
+    })
+
+    } catch(error){
+        console.error(error);
+     res.status(400).json({
+        success:false,
+        message:"there is an error with your file bro"
+     })
+    }
+
 }
