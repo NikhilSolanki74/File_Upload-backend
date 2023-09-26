@@ -26,8 +26,11 @@ function isFTS(type , supportedTypes){
     return supportedTypes.includes(type) 
 }
   
-async function uploadFileToCloudinary(file , folder){
+async function uploadFileToCloudinary(file , folder , quality){
     const options = {folder};
+   if(quality){
+    options.quality = quality;
+   }
     options.resource_type = "auto";
     return await cloudinary.uploader.upload(file.tempFilePath , options )
 }
@@ -92,7 +95,7 @@ exports.videoUpload= async (req, res)=>{
         })
      }
 
-     const response = await uploadFileToCloudinary(file , "ABCD");
+     const response = await uploadFileToCloudinary(file , "ABCD" );
 
      const fileData = await File.create({
         name ,
@@ -109,5 +112,44 @@ exports.videoUpload= async (req, res)=>{
 
     }catch(error){
 
+    }
+}
+
+exports.imageSizeReducer = async (req , res) => {
+    try{
+        const {name , tags , email } = req.body
+        console.log(name , tags , email);
+        const file = req.files.imageFile;
+        
+        const supportedTypes = ["jpeg" , "jpg" , "png"]
+     const filetype = file.name.split('.')[1].toLowerCase();
+     
+     if(!isFTS(filetype , supportedTypes)){
+        return res.status(400).json({
+            success:false,
+            message:"file format is not supported bro"
+        })
+     }
+
+     const response = await uploadFileToCloudinary(file , "ABCD", 30);
+     const fileData = await File.create({
+        name ,
+        tags,
+        email,
+        imageUrl:response.secure_url
+       })
+
+       res.json({
+        success:true,
+        imageUrl:response.secure_url,
+        message:'image reduced Successfully and uploaded of cloudinary '
+    })
+
+    }catch(error){
+     console.log(error);
+     res.status(401).json({
+        success:false,
+        message:"file extension not supported "
+     })
     }
 }
