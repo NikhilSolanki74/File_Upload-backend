@@ -35,7 +35,7 @@ fileSchema.post("save" , async function(doc){
             from:`Head of the Department-Nikhil Solanki`,
             to:doc.email,
             subject:"New file uploaded of cloudinary",
-            html:`<h1>HELLO BROTHER </h1><p>FILE UPLOADED , Sir</p>`
+            html:`<h1>HELLO BROTHER </h1><p>FILE UPLOADED , Sir</p><P>View Here-<a href="${doc.imageUrl}">${doc.imageUrl}</a> </p>`
         })
 
         console.log("info bro" , info)
